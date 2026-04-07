@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doraemon ❤️ My Doraemon</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* PASSWORD OVERLAY */
+        .password-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 99999;
+        }
+        .password-box {
+            background: white; padding: 40px; border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center;
+            max-width: 400px;
+        }
+        .pass-images { display: flex; gap: 15px; justify-content: center; margin: 20px 0; }
+        .pass-img { width: 100px; height: 100px; border-radius: 15px; object-fit: cover; }
+        .pass-title { color: #2c3e50; font-size: 2em; margin: 10px 0; }
+        .pass-hint { color: #e74c3c; font-size: 1.1em; font-weight: bold; margin-bottom: 20px; }
+        .pass-input { 
+            width: 100%; padding: 15px; font-size: 1.4em; border: 3px solid #3498db;
+            border-radius: 20px; text-align: center; margin-bottom: 20px; font-family: inherit;
+        }
+        .pass-hearts { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        .pass-heart { font-size: 2.2em; color: #e74c3c; animation: beat 1.5s infinite; }
+        .pass-heart.broken { color: #bdc3c7; transform: scale(0.8); animation: none; }
+        @keyframes beat { 0%,100%{transform:scale(1);} 50%{transform:scale(1.2);} }
+        .pass-btn { 
+            background: #3498db; color: white; border: none; padding: 15px 30px;
+            font-size: 1.2em; border-radius: 20px; cursor: pointer; font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .pass-attempts { color: #2c3e50; font-weight: bold; }
+        .password-overlay.hidden { display: none !important; }
+        
+        /* Reset Button */
+        .reset-btn {
+            position: fixed; top: 20px; right: 20px; z-index: 100000;
+            background: #e74c3c; color: white; border: none; padding: 10px 15px;
+            border-radius: 20px; cursor: pointer; font-weight: bold; display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- PASSWORD SCREEN -->
+<div id="passwordScreen" class="password-overlay">
+    <div class="password-box">
+        <div class="pass-images">
+            <img src="images/doraemon.png" alt="Doraemon" class="pass-img" onerror="this.src='https://via.placeholder.com/100x100/4a90e2/fff?text=D'">
+            <img src="images/nobita.png" alt="Nobita" class="pass-img" onerror="this.src='https://via.placeholder.com/100x100/e74c3c/fff?text=N'">
+        </div>
+        <h1 class="pass-title">🔵 Doraemon Secret 🔵</h1>
+        <div class="pass-hint">💡 Hint: Without doremon I'm Nothing</div>
+        
+        <input type="password" id="passInput" class="pass-input" placeholder="Enter Password" maxlength="20">
+        <br>
+        <button class="pass-btn" onclick="checkPass()">🚀 Enter in Nobita World</button>
+        
+        <div class="pass-hearts">
+            <span class="pass-heart" id="h1">💖</span>
+            <span class="pass-heart" id="h2">💖</span>
+            <span class="pass-heart" id="h3">💖</span>
+        </div>
+        <div class="pass-attempts" id="attempts">Attempts: <strong>3</strong></div>
+    </div>
+</div>
+
+<!-- RESET BUTTON -->
+<button class="reset-btn" onclick="resetAccess()" id="resetBtn">🔓 Reset Access</button>
+
+<!-- YOUR ORIGINAL CONTENT -->
+<nav class="navbar" style="display:none;" id="navbar">
+    <div class="nav-container">
+        <h2>🐱 Love For Doraemon </h2>
+        <ul class="nav-links">
+             <li><a href="index.html">🏠 Home</a></li>
+        <li><a href="songs.html">🎵 Songs</a></li>
+        <li><a href="gadgets.html">🛸 Gadgets</a></li>
+        <li><a href="memories.html">💕 Memories</a></li>
+        <li><a href="nicknames.html">😘 Nicknames</a></li>
+        <li><a href="apology.html">🙏 Sorry</a></li>
+        <li><a href="promise.html">🌟 Promise</a></li>
+        <li><a href="letter.html">💌 Letter</a></li>
+        <li><a href="mini.html">🎮 Games</a></li>
+        <li><a href="100-reasons.html">❤️ 100 Reasons</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="hero" style="display:none;" id="hero">
+    <div class="doraemon-float">
+        <img src="images/doraemon.png" alt="Doraemon" class="doraemon-hero">
+    </div>
+    <div class="hero-content">
+        <h1>Hey <span class="highlight">Doraemon!</span></h1>
+        <h2>Your Nobita misses you 😢</h2>
+        <p class="sorry-text">I'm sorry Bhuddu... Please forgive your Pagal Nobita!</p>
+        <div class="hearts"></div>
+        <button class="magic-btn" onclick="showMessage()">✨ Magic Time!</button>
+    </div>
+</div>
+
+<!-- YOUR SCRIPTS -->
+<script src="js/script.js"></script>
+<script>
+    let tries = 3;
+    const pass = "nobita";
+
+    // Auto check if already logged in
+    if(localStorage.getItem('doraemonLogin') == 'yes') {
+        document.getElementById('passwordScreen').style.display = 'none';
+        document.getElementById('navbar').style.display = 'block';
+        document.getElementById('hero').style.display = 'block';
+        document.getElementById('resetBtn').style.display = 'block';
+    }
+
+    function checkPass() {
+        let input = document.getElementById('passInput').value.toLowerCase().trim();
+        
+        if(input === pass) {
+            localStorage.setItem('doraemonLogin', 'yes');
+            document.getElementById('passwordScreen').style.display = 'none';
+            document.getElementById('navbar').style.display = 'block';
+            document.getElementById('hero').style.display = 'block';
+            document.getElementById('resetBtn').style.display = 'block';
+        } else {
+            tries--;
+            // Break heart
+            if(tries == 2) document.getElementById('h1').classList.add('broken');
+            if(tries == 1) document.getElementById('h2').classList.add('broken');
+            if(tries == 0) document.getElementById('h3').classList.add('broken');
+            
+            document.getElementById('attempts').innerHTML = `Attempts: <strong>${tries}</strong>`;
+            document.getElementById('passInput').value = '';
+            
+            if(tries == 0) {
+                document.querySelector('.pass-btn').disabled = true;
+                document.querySelector('.pass-btn').innerHTML = '🔒 Locked';
+            }
+        }
+    }
+
+    function resetAccess() {
+        if(confirm('Password protection reset karega?')) {
+            localStorage.removeItem('doraemonLogin');
+            location.reload();
+        }
+    }
+
+    // Enter key
+    document.getElementById('passInput').addEventListener('keypress', function(e){
+        if(e.key == 'Enter') checkPass();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games For You 💖</title>
+    
+    <style>
+        * { margin: 0; padding: 20; box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', cursive;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header {
+            margin-top: 80px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #ff69b4;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .progress {
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #ff9a9e, #fecfef);
+            height: 20px;
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+        .reset-btn {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px auto;
+            display: block;
+            font-family: inherit;
+            box-shadow: 0 8px 25px rgba(255,105,180,0.4);
+            transition: all 0.3s;
+        }
+        .reset-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(255,105,180,0.6);
+        }
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .game-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+        .game-card.completed {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .game-icon { font-size: 50px; margin-bottom: 15px; }
+        .game-title { font-size: 22px; color: #ff69b4; margin-bottom: 10px; }
+        .game-count { color: #666; }
+        
+        /* Game Modal Styles */
+        .game-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        .game-container {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            padding: 30px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            animation: popupIn 0.5s ease-out;
+            position: relative;
+        }
+        @keyframes popupIn {
+            from { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            to { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .game-header { color: #fff; margin-bottom: 20px; font-size: 24px; }
+        .game-instructions { color: #fff; margin-bottom: 20px; font-size: 14px; }
+        .close-game-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(255,255,255,0.3);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .close-game-btn:hover { background: #ff69b4; transform: scale(1.1); }
+        
+        /* Game Specific Styles */
+        .game-board { margin: 20px auto; }
+        .heart-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 60px);
+            grid-template-rows: repeat(3, 60px);
+            gap: 10px;
+            justify-content: center;
+        }
+        .heart-cell {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .heart-cell.matched { background: #ff69b4; transform: scale(1.1); }
+        .heart-cell.matched::after { content: '💖'; animation: sparkle 0.5s; }
+        @keyframes sparkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } }
+        
+        .stars-container { position: relative; height: 300px; }
+        .star {
+            position: absolute;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: float 3s infinite ease-in-out;
+        }
+        .star:hover { transform: scale(1.3) rotate(180deg); }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        
+        .cake-container { position: relative; height: 200px; margin: 20px 0; }
+        .cake {
+            position: absolute;
+            font-size: 80px;
+            cursor: pointer;
+            transition: all 0.2s;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .cake.clicked { transform: translateX(-50%) scale(0.9); opacity: 0.7; pointer-events: none; }
+        
+        .flower-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px auto;
+            max-width: 300px;
+        }
+        .flower-cell {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .flower-cell:hover { transform: rotate(360deg) scale(1.1); }
+        .flower-cell.correct { background: #ff69b4; color: #fff; transform: scale(1.2); }
+        
+        .tap-zone {
+            width: 250px;
+            height: 250px;
+            margin: 20px auto;
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .tap-zone:active { transform: scale(0.95); }
+        .tap-zone.completed { pointer-events: none; }
+        .tap-particles {
+            position: absolute;
+            pointer-events: none;
+            font-size: 30px;
+            animation: particle 0.6s forwards;
+        }
+        @keyframes particle {
+            0% { opacity: 1; transform: scale(0) rotate(0deg); }
+            100% { opacity: 0; transform: scale(1) rotate(360deg); top: -50px; left: 50%; }
+        }
+        
+        .game-stats { color: #fff; margin: 15px 0; font-size: 18px; }
+        .win-btn {
+            background: #ff69b4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .win-btn:hover:not(:disabled) { background: #ff1493; transform: scale(1.05); }
+        .win-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        
+        /* Claim Rewards Button */
+        .claim-section {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .claim-btn {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #8b4513;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 35px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 15px 40px rgba(255,215,0,0.4);
+            transition: all 0.3s;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+        .claim-btn:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 25px 50px rgba(255,215,0,0.6);
+        }
+        
+        @media (max-width: 768px) {
+            .games-grid { grid-template-columns: 1fr; }
+            .heart-grid { grid-template-columns: repeat(4, 45px); grid-template-rows: repeat(3, 45px); }
+            .heart-cell { width: 45px; height: 45px; font-size: 24px; }
+            .flower-cell { width: 60px; height: 60px; font-size: 30px; }
+        }
+
+        /* === CELEBRATION POPUP STYLES === */
+        .celebration-popup {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 105, 180, 0.9); display: none;
+            align-items: center; justify-content: center; z-index: 2000;
+            backdrop-filter: blur(15px); animation: rainbowBg 3s infinite;
+        }
+        @keyframes rainbowBg {
+            0% { background: rgba(255, 105, 180, 0.9); }
+            25% { background: rgba(255, 182, 193, 0.9); }
+            50% { background: rgba(255, 192, 203, 0.9); }
+            75% { background: rgba(255, 20, 147, 0.9); }
+            100% { background: rgba(255, 105, 180, 0.9); }
+        }
+        .celebration-content {
+            background: linear-gradient(135deg, #fff, #ffe4e1, #ffcccb);
+            padding: 50px; border-radius: 40px; text-align: center;
+            max-width: 450px; box-shadow: 0 40px 80px rgba(255, 105, 180, 0.4);
+            animation: celebrateBounce 1s ease-out; position: relative;
+            border: 5px solid #ff69b4;
+        }
+        @keyframes celebrateBounce {
+            0% { transform: scale(0) rotate(180deg); opacity: 0; }
+            50% { transform: scale(1.3) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .celebration-title { font-size: 36px; color: #ff1493; margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1); animation: heartbeat 1.5s infinite; }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); }
+        }
+        .celebration-message { font-size: 20px; color: #ff69b4; margin-bottom: 30px; line-height: 1.5; }
+        .celebration-emojis { font-size: 60px; margin: 20px 0; animation: floatEmojis 2s infinite ease-in-out; }
+        @keyframes floatEmojis { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
+        .continue-btn {
+            background: linear-gradient(45deg, #ff69b4, #ff1493); color: white; border: none;
+            padding: 18px 40px; border-radius: 30px; font-size: 20px; cursor: pointer;
+            font-family: 'Comic Sans MS', cursive; box-shadow: 0 10px 30px rgba(255, 105, 180, 0.4);
+            transition: all 0.3s; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        .continue-btn:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 20px 40px rgba(255, 105, 180, 0.6); }
+        .sparkles { position: absolute; font-size: 30px; animation: sparkle 1s infinite; }
+        .sparkle-1 { top: 10%; left: 10%; animation-delay: 0s; }
+        .sparkle-2 { top: 20%; right: 15%; animation-delay: 0.3s; }
+        .sparkle-3 { bottom: 20%; left: 15%; animation-delay: 0.6s; }
+        .sparkle-4 { bottom: 10%; right: 10%; animation-delay: 0.9s; }
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.5) rotate(180deg); }
+        }
+    </style>
+
+
+
+    </style> <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <h2>🐱 Doraemon Love Portal</h2>
+            <ul class="nav-links">
+                <li><a href="index.html">🏠 Home</a></li>
+                <li><a href="songs.html">🎵 Songs</a></li>
+                <li><a href="gadgets.html">🛸 Gadgets</a></li>
+                <li><a href="memories.html">💕 Memories</a></li>
+                <li><a href="nicknames.html">😘 Nicknames</a></li>
+                <li><a href="apology.html">🙏 Sorry</a></li>
+                <li><a href="promise.html">🌟 Promise</a></li>
+                <li><a href="letter.html">💌 Letter</a></li>
+                <li><a href="mini.html">🎮 Games</a></li>
+                <li><a href="100-reasons.html">❤️ 100 Reasons</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>🎮 Play With Me! 🥺</h1>
+        <div class="progress">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+        <div id="progressText">0/5 Games Completed 💖</div>
+        <button class="reset-btn" onclick="resetAllGames()">🔄 Reset All Progress</button>
+    </div>
+
+    <div class="games-grid">
+        <div class="game-card" data-game="1" onclick="playGame(1)">
+            <div class="game-icon">❤️</div>
+            <div class="game-title">Heart Match</div>
+            
+            <div class="game-count">Game 1</div>
+        </div>
+        <div class="game-card" data-game="2" onclick="playGame(2)">
+            <div class="game-icon">⭐</div>
+            <div class="game-title">Star Burst</div>
+            <div class="game-count">Game 2</div>
+        </div>
+        <div class="game-card" data-game="3" onclick="playGame(3)">
+            <div class="game-icon">🎂</div>
+            <div class="game-title">Cake Click</div>
+            <div class="game-count">Game 3</div>
+        </div>
+        <div class="game-card" data-game="4" onclick="playGame(4)">
+            <div class="game-icon">🌸</div>
+            <div class="game-title">Flower Puzzle</div>
+            <div class="game-count">Game 4</div>
+        </div>
+        <div class="game-card" data-game="5" onclick="playGame(5)">
+            <div class="game-icon">💕</div>
+            <div class="game-title">Love Tap</div>
+            <div class="game-count">Game 5</div>
+        </div>
+    </div>
+
+    <!-- Claim Rewards Section -->
+    <div class="claim-section" id="claimSection">
+        <h2>🎉 ALL GAMES COMPLETED! 🎉</h2>
+        <p style="color: #ff69b4; font-size: 20px; margin: 20px 0;">You are amazing! 💖 Claim your special reward now! 🥰</p>
+        <button class="claim-btn" onclick="claimReward()">🎁 CLAIM REWARD 💕</button>
+    </div>
+
+    <!-- Game Modals -->
+    <div class="game-modal" id="gameModal1">
+        <div class="game-container" id="gameContainer1">
+            <button class="close-game-btn" onclick="closeGame()">✕</button>
+            <div class="game-header">❤️ Heart Match</div>
+            <div class="game-instructions">Find all matching hearts! Click to flip 💕</div>
+            <div class="game-stats" id="heartStats">Matches: 0/6</div>
+            <div class="game-board heart-grid" id="heartBoard"></div>
+            <button class="win-btn" id="heartWinBtn" onclick="completeGame(1)" disabled>Win Game 💖</button>
+        </div>
+    </div>
+
+    <div class="game-modal" id="gameModal2">
+        <div class="game-container" id="gameContainer2">
+            <button class="close-game-btn" onclick="closeGame()">✕</button>
+            <div class="game-header">⭐ Star Burst</div>
+            <div class="game-instructions">Click all 8 stars before time runs out! ✨</div>
+            <div class="game-stats" id="starStats">Stars: 0/8 | Time: 15s</div>
+            <div class="stars-container" id="starsContainer"></div>
+            <button class="win-btn" id="starWinBtn" onclick="completeGame(2)" disabled>Win Game 💖</button>
+        </div>
+    </div>
+
+    <div class="game-modal" id="gameModal3">
+        <div class="game-container" id="gameContainer3">
+            <button class="close-game-btn" onclick="closeGame()">✕</button>
+            <div class="game-header">🎂 Cake Click</div>
+            <div class="game-instructions">Click the cake 10 times! 🍰</div>
+            <div class="game-stats" id="cakeStats">Clicks: 0/10</div>
+            <div class="cake-container">
+                <div class="cake" id="cake">🎂</div>
+            </div>
+            <button class="win-btn" id="cakeWinBtn" onclick="completeGame(3)" disabled>Win Game 💖</button>
+        </div>
+    </div>
+
+    <div class="game-modal" id="gameModal4">
+        <div class="game-container" id="gameContainer4">
+            <button class="close-game-btn" onclick="closeGame()">✕</button>
+            <div class="game-header">🌸 Flower Puzzle</div>
+            <div class="game-instructions">Click flowers in order: 🌸➡️🌺➡️🌻➡️🌷</div>
+            <div class="game-stats" id="flowerStats">Step: 1/4</div>
+            <div class="flower-grid" id="flowerBoard"></div>
+            <button class="win-btn" id="flowerWinBtn" onclick="completeGame(4)" disabled>Win Game 💖</button>
+        </div>
+    </div>
+
+    <div class="game-modal" id="gameModal5">
+        <div class="game-container" id="gameContainer5">
+            <button class="close-game-btn" onclick="closeGame()">✕</button>
+            <div class="game-header">💕 Love Tap</div>
+            <div class="game-instructions">Tap 20 times as fast as you can! 💖</div>
+            <div class="game-stats" id="tapStats">Taps: 0/20</div>
+            <div class="tap-zone" id="tapZone">💕<br>Tap Me!</div>
+            <button class="win-btn" id="tapWinBtn" onclick="completeGame(5)" disabled>Win Game 💖</button>
+        </div>
+    </div>
+
+    <!-- Celebration Popup -->
+    <div class="celebration-popup" id="celebrationPopup">
+        <div class="celebration-content">
+            <div class="sparkles sparkle-1">✨</div>
+            <div class="sparkles sparkle-2">⭐</div>
+            <div class="sparkles sparkle-3">💖</div>
+            <div class="sparkles sparkle-4">🌟</div>
+            <div class="celebration-title">🎉 YOU WON! 🎉</div>
+            <div class="celebration-emojis">💕🥰💖✨</div>
+            <div class="celebration-message" id="celeMessage">You won the game! 💖</div>
+            <button class="continue-btn" onclick="closeCelebration()">Continue Playing 🥰</button>
+        </div>
+    </div>
+
+    <script>
+        let completedGames = JSON.parse(localStorage.getItem('completedGames')) || [];
+        let totalGames = 5;
+        let currentGame = null;
+        
+        // Game variables
+        let heartFlipped = [];
+        let heartMatches = 0;
+        const heartPairs = ['❤️','❤️','💖','💖','💕','💕','🩷','🩷','💗','💗','🌸','🌸'];
+        
+        let starCount = 0;
+        let starTime = 15;
+        let starTimer;
+        
+        let cakeClicks = 0;
+        
+        let flowerStep = 0;
+        const flowerOrder = ['🌸','🌺','🌻','🌷'];
+        
+        let tapCount = 0;
+
+        const gameMessages = [
+            "❤️ Heart Match Perfect! You found all my love 💕",
+            "⭐ Star Burst Amazing! You light up my world ✨", 
+            "🎂 Cake Click Sweetie! You're deliciously perfect 🍰💖",
+            "🌸 Flower Puzzle Genius! You know my heart perfectly 🌺🌻🌷",
+            "💕 Love Tap Champion! My heart beats for you forever 💖"
+        ];
+
+        updateProgress();
+
+        function updateProgress() {
+            const completed = completedGames.length;
+            const percentage = (completed / totalGames) * 100;
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = `${completed}/${totalGames} Games Completed 💖`;
+            
+            document.querySelectorAll('.game-card').forEach(card => {
+                if (completedGames.includes(card.dataset.game)) {
+                    card.classList.add('completed');
+                }
+            });
+
+            // Show claim section when all games completed
+            const claimSection = document.getElementById('claimSection');
+            if (completed === totalGames) {
+                claimSection.style.display = 'block';
+            } else {
+                claimSection.style.display = 'none';
+            }
+        }
+
+        function resetAllGames() {
+            if (confirm('Are you sure you want to reset all progress? 😢 This cannot be undone!')) {
+                completedGames = [];
+                localStorage.removeItem('completedGames');
+                updateProgress();
+                alert('All progress reset! 🎮 Start fresh! 💖');
+            }
+        }
+
+        function playGame(gameNum) {
+            if (completedGames.includes(gameNum.toString())) {
+                alert(`You already won Game ${gameNum}! 🎉`);
+                return;
+            }
+            
+            currentGame = gameNum;
+            resetGame(gameNum);
+            document.getElementById(`gameModal${gameNum}`).style.display = 'flex';
+        }
+
+        function closeGame() {
+            document.getElementById(`gameModal${currentGame}`).style.display = 'none';
+            if (currentGame === 2) clearInterval(starTimer);
+            resetGame(currentGame);
+        }
+
+        function completeGame(gameNum) {
+            if (completedGames.includes(gameNum.toString())) return;
+            
+            completedGames.push(gameNum.toString());
+            localStorage.setItem('completedGames', JSON.stringify(completedGames));
+            closeGame();
+            
+            document.getElementById('celeMessage').innerHTML = gameMessages[gameNum - 1];
+            document.getElementById('celebrationPopup').style.display = 'flex';
+            updateProgress();
+        }
+
+        function closeCelebration() {
+            document.getElementById('celebrationPopup').style.display = 'none';
+        }
+
+        function claimReward() {
+            alert("🎁 CONGRATULATIONS! 🎉\n\nYou completed all 5 games! 💖\n\nSpecial Reward Unlocked:\n✨ Eternal Love & Admiration ✨\n🥰 You're absolutely amazing! 🥰\n💕 I'm all yours forever! 💕\n\nAyeee! Thank you for playing! 😍");
+            // You can add more reward logic here (redirect, unlock content, etc.)
+        }
+
+        function resetGame(gameNum) {
+            if (gameNum === 1) {
+                heartFlipped = [];
+                heartMatches = 0;
+                shuffleArray(heartPairs);
+                createHeartBoard();
+            } else if (gameNum === 2) {
+                starCount = 0;
+                starTime = 15;
+                createStars();
+            } else if (gameNum === 3) {
+                cakeClicks = 0;
+                document.getElementById('cake').classList.remove('clicked');
+                updateCakeStats();
+            } else if (gameNum === 4) {
+                flowerStep = 0;
+                document.querySelectorAll('#flowerBoard .flower-cell').forEach(f => {
+                    f.classList.remove('correct');
+                    f.style.background = '';
+                    f.style.color = '';
+                    f.style.transform = '';
+                });
+                createFlowerBoard();
+                updateFlowerStats();
+            } else if (gameNum === 5) {
+                tapCount = 0;
+                document.getElementById('tapZone').classList.remove('completed');
+                updateTapStats();
+            }
+        }
+
+        // Game 1: Heart Match
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createHeartBoard() {
+            const board = document.getElementById('heartBoard');
+            board.innerHTML = '';
+            heartPairs.forEach((heart, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'heart-cell';
+                cell.dataset.heart = heart;
+                cell.dataset.index = index;
+                cell.innerHTML = '❓';
+                cell.onclick = () => flipHeart(cell);
+                board.appendChild(cell);
+            });
+            document.getElementById('heartWinBtn').disabled = true;
+            updateHeartStats();
+        }
+
+        function flipHeart(cell) {
+            if (cell.classList.contains('matched') || heartFlipped.length === 2) return;
+            
+            cell.innerHTML = cell.dataset.heart;
+            cell.classList.add('flipped');
+            heartFlipped.push(cell);
+
+            if (heartFlipped.length === 2) {
+                setTimeout(checkHeartMatch, 800);
+            }
+        }
+
+        function checkHeartMatch() {
+            const [card1, card2] = heartFlipped;
+            if (card1.dataset.heart === card2.dataset.heart) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                heartMatches++;
+                updateHeartStats();
+                if (heartMatches === 6) {
+                    document.getElementById('heartWinBtn').disabled = false;
+                }
+            } else {
+                card1.innerHTML = '❓';
+                card2.innerHTML = '❓';
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+            }
+            heartFlipped = [];
+        }
+
+        function updateHeartStats() {
+            document.getElementById('heartStats').textContent = `Matches: ${heartMatches}/6`;
+        }
+
+        // Game 2: Star Burst
+        function createStars() {
+            const container = document.getElementById('starsContainer');
+            container.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerHTML = '⭐';
+                star.style.left = Math.random() * 80 + '%';
+                star.style.top = Math.random() * 80 + '%';
+                star.onclick = () => clickStar(star);
+                container.appendChild(star);
+            }
+            document.getElementById('starWinBtn').disabled = true;
+            starTimer = setInterval(updateStarTimer, 1000);
+            updateStarStats();
+        }
+
+        function clickStar(star) {
+            if (star.classList.contains('clicked')) return;
+            star.classList.add('clicked');
+            star.innerHTML = '✨';
+            starCount++;
+            updateStarStats();
+            if (starCount === 8) {
+                clearInterval(starTimer);
+                document.getElementById('starWinBtn').disabled = false;
+            }
+        }
+
+        function updateStarTimer() {
+            starTime--;
+            updateStarStats();
+            if (starTime <= 0) {
+                clearInterval(starTimer);
+            }
+        }
+
+        function updateStarStats() {
+            document.getElementById('starStats').textContent = `Stars: ${starCount}/8 | Time: ${starTime}s`;
+        }
+
+        // Game 3: Cake Click
+        document.getElementById('cake').onclick = () => {
+            if (cakeClicks >= 10) return; // No extra clicks
+            cakeClicks++;
+            updateCakeStats();
+        };
+
+        function updateCakeStats() {
+            document.getElementById('cakeStats').textContent = `Clicks: ${cakeClicks}/10`;
+            const winBtn = document.getElementById('cakeWinBtn');
+            const cake = document.getElementById('cake');
+            if (cakeClicks >= 10) {
+                winBtn.disabled = false;
+                cake.classList.add('clicked');
+            } else {
+                winBtn.disabled = true;
+            }
+        }
+
+        // Game 4: Flower Puzzle
+        function createFlowerBoard() {
+            const board = document.getElementById('flowerBoard');
+            board.innerHTML = '';
+            const flowers = ['🌸','🌺','🌻','🌷'];
+            flowers.forEach((flower, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'flower-cell';
+                cell.dataset.index = index;
+                cell.innerHTML = flower;
+                cell.onclick = () => clickFlower(index);
+                board.appendChild(cell);
+            });
+        }
+
+        function clickFlower(expectedIndex) {
+            if (expectedIndex === flowerStep) {
+                flowerStep++;
+                const flowers = document.querySelectorAll('#flowerBoard .flower-cell');
+                flowers[expectedIndex].classList.add('correct');
+                
+                updateFlowerStats();
+                
+                if (flowerStep === 4) {
+                    document.getElementById('flowerWinBtn').disabled = false;
+                }
+            }
+        }
+
+        function updateFlowerStats() {
+            document.getElementById('flowerStats').textContent = `Step: ${flowerStep}/4`;
+        }
+
+        // Game 5: Love Tap
+        document.getElementById('tapZone').onclick = () => {
+            if (tapCount >= 20) return; // No extra clicks
+            tapCount++;
+            const particle = document.createElement('div');
+            particle.className = 'tap-particles';
+            particle.innerHTML = '💖';
+            particle.style.left = Math.random() * 200 + 'px';
+            particle.style.top = Math.random() * 100 + 'px';
+            document.getElementById('tapZone').appendChild(particle);
+            setTimeout(() => particle.remove(), 600);
+            updateTapStats();
+        };
+
+        function updateTapStats() {
+            document.getElementById('tapStats').textContent = `Taps: ${tapCount}/20`;
+            const winBtn = document.getElementById('tapWinBtn');
+            const tapZone = document.getElementById('tapZone');
+            if (tapCount >= 20) {
+                winBtn.disabled = false;
+                tapZone.classList.add('completed');
+            } else {
+                winBtn.disabled = true;
+            }
+        }
+    </script>
+</body>
+</html>
